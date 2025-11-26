@@ -1,4 +1,4 @@
-name: 🌐 Static Website Deploy
+name: Static Website Deploy
 
 on:
   # Triggers the workflow on push events to the main branch
@@ -14,15 +14,13 @@ jobs:
       # 1. Checkout the latest code
       - name: Checkout Repository
         uses: actions/checkout@v4 # Use v4 for the latest version
-
+        
       # 2. Deploy files to VPS using SCP
       - name: Deploy static files via SCP
-        uses: appleboy/scp-action@v0.1.7 # Action for Secure Copy over SSH
+        uses: appleboy/scp-action@v0.1.7 
         with:
-          host: ${{ secrets.VPS_IP }}
-          username: ${{ secrets.VPS_USERNAME }}
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          # 'source' is the folder in your GitHub repo to copy ('.' means the whole repo)
           source: "." 
-          # 'target' is the web root directory on your VPS
-          target: "/var/www/Theme-project/" 
+          target: "/var/www/Theme-project/"
