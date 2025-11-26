@@ -1,23 +1,42 @@
-jobs:
-  test_connection:
-    runs-on: ubuntu-latest
-    
-    steps:
-      # 1. (Optional but recommended) Checkout Code
-      - name: Checkout Code
-        uses: actions/checkout@v4
+steps:
+  - name: Checkout Repository Code
+    uses: actions/checkout@v4
 
-      # 2. 🔑 CRITICAL: This step MUST run BEFORE the SSH action!
-      - name: Write SSH Private Key to File on Runner
-        run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/ssh_key
-          chmod 600 /tmp/ssh_key 
+  # 1. FIX: WRITE PRIVATE KEY TO A TEMPORARY FILE
+  # This step ensures the multi-line SSH key is correctly formatted as a file on the runner VM.
+  - name: Write SSH Private Key to File on Runner
+    run: |
+      # Use echo with quotes to preserve line breaks from the secret
+      echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/ssh_key
+      # Set the required restrictive permissions (read-only for owner)
+      chmod 600 /tmp/ssh_key 
 
-      # 3. 🚀 The SSH Action runs and uses the file created in Step 2
-      - name: SSH Connection and Script Execution Test
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key_path: /tmp/ssh_key # Now the file exists here!
-          # ... (rest of your inputs like port, script, etc.) ...
+  # 2. RUN SCRIPT ON VPS AND TEST WRITE PERMISSIONS
+  - name: Connect and Test Write Permissions in /var/www/
+    uses: appleboy/ssh-action@v1.0.0
+    with:
+      host: ${{ secrets.VPS_HOST }}   # e.g., 62.72.7.35
+      username: ${{ secrets.VPS_USER }} # Must be 'root' for /var/www/ access
+      key_path: /tmp/ssh_key          # Uses the file created in the previous step
+      
+      # --- Script to Execute on the VPS ---
+      script: |
+        # 1. Announce successful connection
+        echo "--- ✅ SUCCESS: SSH Connection Established as ${{ secrets.VPS_USER }} ---"
+        
+        # 2. Define the target directory inside /var/www/
+        TEST_DIR="/var/www/github_actions_test"
+        
+        # 3. Create the folder (using -p flag to avoid error if it already exists)
+        mkdir -p $TEST_DIR
+        echo "--- Created directory: $TEST_DIR ---"
+        
+        # 4. Write a verification file with a timestamp
+        TEST_FILE="$TEST_DIR/deployment_check.txt"
+        echo "Deployment Check: SUCCESS at $(date)" > $TEST_FILE
+        echo "--- Wrote test file: $TEST_FILE ---"
+        
+        # 5. List the contents of the directory to verify the file and permissions
+        echo "--- Verification on VPS ---"
+        ls -al $TEST_DIR
+        cat $TEST_FILE
