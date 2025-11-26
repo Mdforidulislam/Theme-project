@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout code
+      # 1. Checkout repository
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -18,8 +18,14 @@ jobs:
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.8.0
         with:
-          # Paste your private key directly here
-          ssh-private-key: -----BEGIN OPENSSH PRIVATE KEY-----b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZWQyNTUxOQAAACC9/lN+1OCBNSrJ188uKDmXHnNLefou95yuXznd70v/MQAAAIhSQhGdUkIRnQAAAAtzc2gtZWQyNTUxOQAAACC9/lN+1OCBNSrJ188uKDmXHnNLefou95yuXznd70v/MQAAAECOWt5NIjKWFsL7kV9rW+ZJfWdm3duPCExwMhTrhRzomr3+U37U4IE1KsnXzy4oOZcec0t5+i73nK5fOd3vS/8xAAAAAAECAwQF-----END OPENSSH PRIVATE KEY-----
+          ssh-private-key: |
+            -----BEGIN OPENSSH PRIVATE KEY-----
+            b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAt
+            zc2gtZWQyNTUxOQAAACC9/lN+1OCBNSrJ188uKDmXHnNLefou95yuXznd70v/MQAA
+            AIhSQhGdUkIRnQAAAAtzc2gtZWQyNTUxOQAAACC9/lN+1OCBNSrJ188uKDmXHnNL
+            efou95yuXznd70v/MQAAAECOWt5NIjKWFsL7kV9rW+ZJfWdm3duPCExwMhTrhRzo
+            mr3+U37U4IE1KsnXzy4oOZcec0t5+i73nK5fOd3vS/8xAAAAAAECAwQF
+            -----END OPENSSH PRIVATE KEY-----
 
       # 3. Deploy to VPS
       - name: Deploy to VPS
@@ -30,6 +36,5 @@ jobs:
             git reset --hard
             git clean -fd
             git pull origin main
-            # reload nginx if needed
             systemctl reload nginx
           EOF
