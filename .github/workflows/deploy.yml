@@ -1,50 +1,23 @@
-name: Deployment Connection Test (Fixed Key Parsing)
-
-on:
-  push:
-    branches:
-      - main # Ensure this matches your target branch
-
 jobs:
   test_connection:
     runs-on: ubuntu-latest
     
     steps:
+      # 1. (Optional but recommended) Checkout Code
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # --- FIX STEP 1: Write SSH Private Key to a Temporary File ---
-      # The 'run' command forces the secret's content to be treated as a multi-line string
+      # 2. 🔑 CRITICAL: This step MUST run BEFORE the SSH action!
       - name: Write SSH Private Key to File on Runner
         run: |
-          # The use of quotes "" around the secret ensures line breaks are kept.
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/ssh_key
-          # SSH requires the private key file to have restricted permissions (read-only for owner)
           chmod 600 /tmp/ssh_key 
 
-      # --- FIX STEP 2: Use the Key File Path for the Connection ---
+      # 3. 🚀 The SSH Action runs and uses the file created in Step 2
       - name: SSH Connection and Script Execution Test
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
-          # 🚨 Instead of 'key', we use 'key_path' pointing to the file created above
-          key_path: /tmp/ssh_key 
-          
-          # --- Script to Run on the VPS ---
-          script: |
-            # 1. Announce successful connection
-            echo "--- ✅ SUCCESS: SSH Connection Established ---"
-            
-            # 2. Define the path for the test folder (Using root's home directory ~)
-            TEST_DIR="/root/github_actions_test"
-            
-            # 3. Create a folder and write a timestamp file
-            mkdir -p $TEST_DIR
-            echo "--- Created directory: $TEST_DIR ---"
-            echo "Deployment Test Run at $(date)" > $TEST_DIR/test_log.txt
-            echo "--- Wrote test_log.txt inside $TEST_DIR ---"
-            
-            # 4. List the contents of the directory to verify
-            echo "--- Verification on VPS ---"
-            ls -al $TEST_DIR
+          key_path: /tmp/ssh_key # Now the file exists here!
+          # ... (rest of your inputs like port, script, etc.) ...
