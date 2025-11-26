@@ -22,10 +22,7 @@ jobs:
           host: ${{ secrets.VPS_IP }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
           # 'source' is the folder in your GitHub repo to copy ('.' means the whole repo)
           source: "." 
           # 'target' is the web root directory on your VPS
-          target: "/var/www/html/" 
-          # You might want to exclude .git, .github, etc.
-          exclude: ".git,.github"
+          target: "/var/www/Theme-project/" 
