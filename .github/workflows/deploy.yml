@@ -24,30 +24,31 @@ jobs:
           source: "."
           target: "/var/www/Theme-project/"
           rm: false
+1
+     # 3. Verification script
+- name: SSH Verification
+  uses: appleboy/ssh-action@v1.0.3
+  with:
+    host: ${{ secrets.VPS_HOST }}
+    username: ${{ secrets.VPS_USER }}
+    key: ${{ secrets.SSH_PRIVATE_KEY }} 
+    debug: true                     # <-- IMPORTANT FOR LOGS
+    script: |
+      echo "--- SSH Connected ---"
+      
+      DEPLOY_DIR="/var/www/Theme-project/"
+      TS=$(date +%s)
 
-      # 3. Verification script
-      - name: SSH Verification
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}   # <-- FIX
-          script: |
-            echo "--- SSH Connected ---"
-            
-            DEPLOY_DIR="/var/www/Theme-project/"
-            TS=$(date +%s)
+      TEST_DIR="$DEPLOY_DIR/github_actions_test_$TS"
+      mkdir -p $TEST_DIR
+      echo "Created $TEST_DIR"
 
-            TEST_DIR="$DEPLOY_DIR/github_actions_test_$TS"
-            mkdir -p $TEST_DIR
-            echo "Created $TEST_DIR"
+      TEST_FILE="$TEST_DIR/verify.txt"
+      echo "Deployed at $(date)" > $TEST_FILE
+      echo "Wrote: $TEST_FILE"
 
-            TEST_FILE="$TEST_DIR/verify.txt"
-            echo "Deployed at $(date)" > $TEST_FILE
-            echo "Wrote: $TEST_FILE"
+      echo "--- Listing Directory ---"
+      ls -al $DEPLOY_DIR
 
-            echo "--- Listing Directory ---"
-            ls -al $DEPLOY_DIR
-
-            echo "--- File Content ---"
-            cat $TEST_FILE
+      echo "--- File Content ---"
+      cat $TEST_FILE
