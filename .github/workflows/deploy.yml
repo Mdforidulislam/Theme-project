@@ -1,26 +1,62 @@
-name: Static Website Deploy
+name: Deploy to VPS
 
 on:
-  # Triggers the workflow on push events to the main branch
   push:
     branches:
       - main
 
 jobs:
   deploy:
-    name: Deploy Static Files
     runs-on: ubuntu-latest
+
     steps:
-      # 1. Checkout the latest code
+      # 1. Checkout repository
       - name: Checkout Repository
-        uses: actions/checkout@v4 # Use v4 for the latest version
-        
-      # 2. Deploy files to VPS using SCP
-      - name: Deploy static files via SCP
-        uses: appleboy/scp-action@v0.1.7 
+        uses: actions/checkout@v4
+
+      # 2. Write private SSH key to file
+      - name: Write SSH Private Key to File
+        id: write_key
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/ssh_key
+          chmod 600 /tmp/ssh_key
+
+      # 3. Deploy files to VPS using SCP
+      - name: Deploy Files via SCP
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "." 
+          key_path: /tmp/ssh_key
+          source: "."
           target: "/var/www/Theme-project/"
+          exclude: ".git"
+
+      # 4. SSH to VPS + Create folder & file + Echo verification
+      - name: Run Verification Script on VPS
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key_path: /tmp/ssh_key
+          script: |
+            echo "--- Connected to VPS ---"
+            
+            DEPLOY_DIR="/var/www/Theme-project/"
+            TIMESTAMP=$(date +%s)
+
+            TEST_DIR="$DEPLOY_DIR/github_actions_test_$TIMESTAMP"
+            mkdir -p $TEST_DIR
+            echo "Created test directory: $TEST_DIR"
+
+            TEST_FILE="$TEST_DIR/deploy_verification.txt"
+            echo "Deployment verified at $(date)" > $TEST_FILE
+            echo "Wrote test file: $TEST_FILE"
+
+            echo "--- Listing deployed files ---"
+            ls -al $DEPLOY_DIR
+
+            echo "--- File content ---"
+            cat $TEST_FILE
+
+            echo "--- Deployment script completed successfully ---"
