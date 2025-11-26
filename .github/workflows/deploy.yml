@@ -1,28 +1,44 @@
-name: 🌐 Static Website Deploy
+name: Deployment Connection Test
 
 on:
-  # Triggers the workflow on push events to the main branch
   push:
     branches:
-      - main
+      - main # Change this to the branch you push code to
 
 jobs:
-  deploy:
-    name: Deploy Static Files
+  test_connection:
     runs-on: ubuntu-latest
-    steps:
-      # 1. Checkout the latest code
-      - name: Checkout Repository
-        uses: actions/checkout@v4 # Use v4 for the latest version
 
-      # 2. Deploy files to VPS using SCP
-      - name: Deploy static files via SCP
-        uses: appleboy/scp-action@v0.1.7 # Action for Secure Copy over SSH
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        # This step pulls your repository code onto the runner VM (not needed for this specific test, but good practice)
+
+      - name: SSH Connection and Script Execution Test
+        uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ secrets.VPS_IP }}
-          username: ${{ secrets.VPS_USERNAME }}
+          # --- Configuration from GitHub Secrets ---
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          # 'source' is the folder in your GitHub repo to copy ('.' means the whole repo)
-          source: "." 
-          # 'target' is the web root directory on your VPS
-          target: "/var/www/Theme-project/" 
+          
+          # --- Script to Run on the VPS ---
+          # This is a multiline command block that runs *after* a successful SSH connection
+          script: |
+            # 1. Announce successful connection
+            echo "--- ✅ SUCCESS: SSH Connection Established ---"
+            
+            # 2. Define the path for the test folder
+            TEST_DIR="/root/github_actions_test"
+            
+            # 3. Create a folder (using -p flag to avoid error if it already exists)
+            mkdir -p $TEST_DIR
+            echo "--- Created directory: $TEST_DIR ---"
+            
+            # 4. Write a file inside the new folder with a timestamp
+            echo "Deployment Test Run at $(date)" > $TEST_DIR/test_log.txt
+            echo "--- Wrote test_log.txt inside $TEST_DIR ---"
+            
+            # 5. List the contents of the directory to verify
+            echo "--- Verification on VPS ---"
+            ls -al $TEST_DIR
