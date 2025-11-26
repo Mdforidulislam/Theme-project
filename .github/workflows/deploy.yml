@@ -2,7 +2,7 @@ name: Deploy to VPS
 
 on:
   push:
-    branches:
+    branches: 
       - main
 
 jobs:
@@ -10,53 +10,44 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout repository
+      # 1. Checkout
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # 2. Write private SSH key to file
-      - name: Write SSH Private Key to File
-        id: write_key
-        run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/ssh_key
-          chmod 600 /tmp/ssh_key
-
-      # 3. Deploy files to VPS using SCP
-      - name: Deploy Files via SCP
+      # 2. Deploy via SCP  
+      - name: Deploy Files to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
-          key_path: /tmp/ssh_key
+          key: ${{ secrets.SSH_PRIVATE_KEY }}   # <-- FIX
           source: "."
           target: "/var/www/Theme-project/"
-          exclude: ".git"
+          rm: false
 
-      # 4. SSH to VPS + Create folder & file + Echo verification
-      - name: Run Verification Script on VPS
+      # 3. Verification script
+      - name: SSH Verification
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
-          key_path: /tmp/ssh_key
+          key: ${{ secrets.SSH_PRIVATE_KEY }}   # <-- FIX
           script: |
-            echo "--- Connected to VPS ---"
+            echo "--- SSH Connected ---"
             
             DEPLOY_DIR="/var/www/Theme-project/"
-            TIMESTAMP=$(date +%s)
+            TS=$(date +%s)
 
-            TEST_DIR="$DEPLOY_DIR/github_actions_test_$TIMESTAMP"
+            TEST_DIR="$DEPLOY_DIR/github_actions_test_$TS"
             mkdir -p $TEST_DIR
-            echo "Created test directory: $TEST_DIR"
+            echo "Created $TEST_DIR"
 
-            TEST_FILE="$TEST_DIR/deploy_verification.txt"
-            echo "Deployment verified at $(date)" > $TEST_FILE
-            echo "Wrote test file: $TEST_FILE"
+            TEST_FILE="$TEST_DIR/verify.txt"
+            echo "Deployed at $(date)" > $TEST_FILE
+            echo "Wrote: $TEST_FILE"
 
-            echo "--- Listing deployed files ---"
+            echo "--- Listing Directory ---"
             ls -al $DEPLOY_DIR
 
-            echo "--- File content ---"
+            echo "--- File Content ---"
             cat $TEST_FILE
-
-            echo "--- Deployment script completed successfully ---"
