@@ -22,28 +22,6 @@ jobs:
         with:
           node-version: '20'
 
-      # 3. Install dependencies
-      - name: Install Dependencies
-        run: npm install
-
-      # 4. Test suite
-      - name: Run Tests
-        run: npm test
-
-      # 5. Build step
-      - name: Build Project
-        run: npm run build
-
-      # 6. Deploy build files to VPS
-      - name: Deploy to VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "dist/*"
-          target: "/var/www/your-app"
-
       # 7. SSH into VPS → create folder → create file → echo message → log everything
       - name: Run Setup Script on VPS
         uses: appleboy/ssh-action@v0.1.7
@@ -82,7 +60,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
-          script: |
-            cd /var/www/your-app
-            pm2 restart all
-            echo "🚀 App restarted successfully"
+          source: "./"
+          target: "/var/www/Theme-project"
+          
+          
