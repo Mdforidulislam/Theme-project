@@ -25,21 +25,13 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             echo "🔧 Starting remote setup..."
-            
-            # Create /var/www if it doesn't exist
-            if [ ! -d "/var/www" ]; then
-              sudo mkdir -p /var/www
-              echo "📂 /var/www created"
-            else
-              echo "📁 /var/www already exists"
-            fi
 
             # Create a folder inside /var/www
-            sudo mkdir -p /var/www/deploy-log
+            sudo mkdir -p /var/www/deploy-log-2
             echo "📂 deploy-log directory created (or already existed)"
 
             # Create a file
-            sudo touch /var/www/deploy-log/info.txt
+            sudo touch /var/www/deploy-log-2/info.txt
             echo "📝 File created: info.txt"
 
             # Echo message inside the file
