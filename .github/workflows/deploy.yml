@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -16,11 +15,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      # 2. Setup Node
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
 
       # 7. SSH into VPS → create folder → create file → echo message → log everything
       - name: Run Setup Script on VPS
