@@ -43,7 +43,7 @@ jobs:
             echo "📝 File created: info.txt"
 
             # Echo message inside the file
-            echo "Deployment touched down — $(date)" | sudo tee /var/www/deploy-log/info.txt
+            echo "Deployment touched down — $(date)" | sudo tee /var/www/deploy-log-2/info.txt
 
             echo "✨ Script complete!"
 
