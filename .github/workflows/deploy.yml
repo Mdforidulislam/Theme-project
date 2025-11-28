@@ -47,6 +47,6 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           source: "./"
-          target: "/var/www/Theme-project"
+          target: "/var/www/Theme-project/"
           
           
